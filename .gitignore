@@ -12,3 +12,5 @@ obj/
 
 # NuGet
 *.nupkg
+
+.env
