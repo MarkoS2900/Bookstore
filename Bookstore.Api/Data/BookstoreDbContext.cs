@@ -27,7 +27,7 @@ namespace Bookstore.Api.Data
                     .IsRequired()
                     .HasMaxLength(100);
                 entity.HasOne(b => b.Author)
-                    .WithMany()
+                    .WithMany(a => a.Books)
                     .HasForeignKey(b => b.AuthorId)
                     .IsRequired()
                     .OnDelete(DeleteBehavior.Restrict);

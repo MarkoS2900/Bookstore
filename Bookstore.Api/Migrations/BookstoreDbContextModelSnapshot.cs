@@ -51,7 +51,6 @@ namespace Bookstore.Api.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Subtitle")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
@@ -69,12 +68,17 @@ namespace Bookstore.Api.Migrations
             modelBuilder.Entity("Bookstore.Api.Models.Book", b =>
                 {
                     b.HasOne("Bookstore.Api.Models.Author", "Author")
-                        .WithMany()
+                        .WithMany("Books")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Bookstore.Api.Models.Author", b =>
+                {
+                    b.Navigation("Books");
                 });
 #pragma warning restore 612, 618
         }
