@@ -1,4 +1,6 @@
-﻿using Bookstore.Api.Models;
+﻿using Bookstore.Api.DTO.Books;
+using Bookstore.Api.DTO.Common;
+using Bookstore.Api.Models;
 
 namespace Bookstore.Api.Repositories.Interfaces
 {
@@ -13,5 +15,7 @@ namespace Bookstore.Api.Repositories.Interfaces
         Task<Book> UpdateAsync(Book book, CancellationToken cancellationToken = default);
 
         Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+        Task<PagedResponse<Book>> SearchAsync(BookSearchRequest request, CancellationToken cancellationToken = default);
     }
 }

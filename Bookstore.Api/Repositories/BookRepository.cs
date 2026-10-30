@@ -1,4 +1,6 @@
 ﻿using Bookstore.Api.Data;
+using Bookstore.Api.DTO.Books;
+using Bookstore.Api.DTO.Common;
 using Bookstore.Api.Models;
 using Bookstore.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +51,42 @@ namespace Bookstore.Api.Repositories
             context.Books.Remove(book);
             await context.SaveChangesAsync(cancellationToken);
             return true;
+        }
+
+        public async Task<PagedResponse<Book>> SearchAsync(BookSearchRequest request, CancellationToken cancellationToken = default)
+        {
+            var query = context.Books
+                .AsNoTracking()
+                .Include(b => b.Author)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                query = query.Where(b =>
+                    b.Title.Contains(request.Title));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Author))
+            {
+                query = query.Where(b =>
+                    b.Author.Name.Contains(request.Author));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var books = await query
+                .OrderBy(b => b.Title)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PagedResponse<Book>
+            {
+                Items = books,
+                Page = request.Page,
+                PageSize = request.PageSize,
+                TotalCount = totalCount
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Bookstore.Api.DTO.Books;
+using Bookstore.Api.DTO.Common;
 using Bookstore.Api.Mappings;
 using Bookstore.Api.Repositories.Interfaces;
 using Bookstore.Api.Services.Interfaces;
@@ -55,6 +56,25 @@ namespace Bookstore.Api.Services
         public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             return await bookRepository.DeleteAsync(id, cancellationToken);
+        }
+
+        public async Task<PagedResponse<BookResponse>> SearchAsync(BookSearchRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request.Page < 1)
+                throw new ArgumentException("Page must be greater than 0.");
+
+            if (request.PageSize < 1 || request.PageSize > 100)
+                throw new ArgumentException("PageSize must be between 1 and 100.");
+
+            var result = await bookRepository.SearchAsync(request, cancellationToken);
+
+            return new PagedResponse<BookResponse>
+            {
+                Items = result.Items.Select(b => b.ToResponse()).ToList(),
+                Page = result.Page,
+                PageSize = result.PageSize,
+                TotalCount = result.TotalCount
+            };
         }
     }
 }

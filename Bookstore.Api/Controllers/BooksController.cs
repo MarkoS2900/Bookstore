@@ -1,4 +1,5 @@
 ﻿using Bookstore.Api.DTO.Books;
+using Bookstore.Api.DTO.Common;
 using Bookstore.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -63,5 +64,19 @@ public class BooksController(IBookService bookService) : ControllerBase
         var deleted = await bookService.DeleteAsync(id, cancellationToken);
 
         return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<PagedResponse<BookResponse>>> Search([FromQuery] BookSearchRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await bookService.SearchAsync(request, cancellationToken);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
