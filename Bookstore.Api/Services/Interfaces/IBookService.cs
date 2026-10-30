@@ -4,14 +4,14 @@ namespace Bookstore.Api.Services.Interfaces
 {
     public interface IBookService
     {
-        Task<IReadOnlyList<BookResponse>> GetAllAsync();
+        Task<IReadOnlyList<BookResponse>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task<BookResponse?> GetByIdAsync(int id);
+        Task<BookResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
-        Task<BookResponse> CreateAsync(BookRequest request);
+        Task<BookResponse> CreateAsync(BookRequest request, CancellationToken cancellationToken = default);
 
-        Task<BookResponse> UpdateAsync(BookRequest request);
+        Task<BookResponse?> UpdateAsync(int id, BookRequest request, CancellationToken cancellationToken = default);
 
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
     }
 }

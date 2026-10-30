@@ -1,6 +1,5 @@
 ﻿using Bookstore.Api.DTO.Authors;
 using Bookstore.Api.Mappings;
-using Bookstore.Api.Models;
 using Bookstore.Api.Repositories.Interfaces;
 using Bookstore.Api.Services.Interfaces;
 
