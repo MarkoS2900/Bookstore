@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="../Bookstore.Identity/Bookstore.Identity.csproj" Id="4604b181-9434-4e1e-a5a5-7eaa936a3ff0" />
   <Project Path="Bookstore.Api.csproj" />
+  <Project Path="../Bookstore.Api.Tests/Bookstore.Api.Tests.csproj" />
 </Solution>
