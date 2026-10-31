@@ -1,6 +1,7 @@
 ﻿using Bookstore.Api.DTO.Books;
 using Bookstore.Api.DTO.Common;
 using Bookstore.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bookstore.Api.Controllers;
@@ -9,7 +10,7 @@ namespace Bookstore.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class BooksController(IBookService bookService) : ControllerBase
 {
-
+    [Authorize(Policy = "BookstoreRead")]
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<BookResponse>>> GetAll(CancellationToken cancellationToken)
     {
@@ -17,6 +18,7 @@ public class BooksController(IBookService bookService) : ControllerBase
         return Ok(books);
     }
 
+    [Authorize(Policy = "BookstoreRead")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BookResponse>> GetById(int id, CancellationToken cancellationToken)
     {
@@ -24,7 +26,8 @@ public class BooksController(IBookService bookService) : ControllerBase
 
         return book is null ? NotFound() : Ok(book);
     }
-
+    
+    [Authorize(Policy = "BookstoreWrite")]
     [HttpPost]
     public async Task<ActionResult<BookResponse>> Create(BookRequest request, CancellationToken cancellationToken)
     {
@@ -43,6 +46,7 @@ public class BooksController(IBookService bookService) : ControllerBase
         }
     }
 
+    [Authorize(Policy = "BookstoreWrite")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<BookResponse>> Update(int id, BookRequest request, CancellationToken cancellationToken)
     {
@@ -58,6 +62,7 @@ public class BooksController(IBookService bookService) : ControllerBase
         }
     }
 
+    [Authorize(Policy = "BookstoreWrite")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
@@ -66,6 +71,7 @@ public class BooksController(IBookService bookService) : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
+    [Authorize(Policy = "BookstoreRead")]
     [HttpGet("search")]
     public async Task<ActionResult<PagedResponse<BookResponse>>> Search([FromQuery] BookSearchRequest request, CancellationToken cancellationToken)
     {
