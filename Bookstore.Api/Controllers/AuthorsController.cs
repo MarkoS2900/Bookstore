@@ -7,40 +7,60 @@ namespace Bookstore.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class AuthorsController(IAuthorService authorService) : ControllerBase
+public class AuthorsController(IAuthorService authorService, ILogger<AuthorsController> logger) : ControllerBase
 {
     [Authorize(Policy = "BookstoreRead")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AuthorResponse>>> GetAll(CancellationToken cancellationToken)
     {
-        var author = await authorService.GetAllAsync(cancellationToken);
-        return Ok(author);
+        logger.LogInformation("Retrieving all authors.");
+
+        var authors = await authorService.GetAllAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Successfully retrieved {AuthorCount} authors.",
+            authors.Count());
+
+        return Ok(authors);
     }
 
     [Authorize(Policy = "BookstoreRead")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AuthorResponse>> GetById(int id, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Retrieving author with ID {AuthorId}.", id);
+
         var author = await authorService.GetByIdAsync(id, cancellationToken);
 
-        return author is null ? NotFound() : Ok(author);
+        if (author is null)
+        {
+            logger.LogWarning("Author with ID {AuthorId} was not found.", id);
+            return NotFound();
+        }
+
+        logger.LogInformation("Successfully retrieved author with ID {AuthorId}.", id);
+
+        return Ok(author);
     }
 
     [Authorize(Policy = "BookstoreWrite")]
     [HttpPost]
     public async Task<ActionResult<AuthorResponse>> Create(CreateAuthorRequest request, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Creating author.");
+
         try
         {
             var author = await authorService.CreateAsync(request, cancellationToken);
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = author.AuthorId },
-                author);
+            logger.LogInformation("Successfully created author with ID {AuthorId}.", author.AuthorId);
+
+            return CreatedAtAction(nameof(GetById), new { id = author.AuthorId }, author);
         }
         catch (KeyNotFoundException ex)
         {
+            logger.LogWarning("Failed to create author: {ErrorMessage}", ex.Message);
+
             return BadRequest(new { message = ex.Message });
         }
     }

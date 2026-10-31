@@ -6,22 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookstore.Identity.Controllers;
 
-public class AccountController : Controller
+public class AccountController(IIdentityServerInteractionService interaction, TestUserStore users, ILogger<AccountController> logger) : Controller
 {
-    private readonly IIdentityServerInteractionService _interaction;    
-    private readonly TestUserStore _users;
-
-    public AccountController(
-        IIdentityServerInteractionService interaction,
-        TestUserStore users)
-    {
-        _interaction = interaction;
-        _users = users;
-    }
-
     [HttpGet]
     public IActionResult Login(string returnUrl)
     {
+        logger.LogInformation("Login page requested.");
+
         ViewData["ReturnUrl"] = returnUrl;
         return View();
     }
@@ -30,19 +21,26 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string username, string password, string returnUrl)
     {
-        var context = await _interaction.GetAuthorizationContextAsync(returnUrl, HttpContext.RequestAborted);
+        logger.LogInformation("Login attempt received for user {Username}.", username);
+
+        var context = await interaction.GetAuthorizationContextAsync(returnUrl, HttpContext.RequestAborted);
 
         if (context == null)
-            return BadRequest("Invalid return URL.");
-
-        if (!_users.ValidateCredentials(username, password))
         {
+            logger.LogWarning("Login rejected because the authorization return URL is invalid.");
+            return BadRequest("Invalid return URL.");
+        }
+
+        if (!users.ValidateCredentials(username, password))
+        {
+            logger.LogWarning("Login failed for user {Username} due to invalid credentials.", username);
+
             ModelState.AddModelError("", "Invalid username or password.");
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
-        var user = _users.FindByUsername(username);
+        var user = users.FindByUsername(username);
 
         var isUser = new IdentityServerUser(user.SubjectId)
         {
@@ -50,8 +48,9 @@ public class AccountController : Controller
             AdditionalClaims = user.Claims
         };
 
-        // Sign them in using the extension method
         await HttpContext.SignInAsync(isUser);
+
+        logger.LogInformation("User {Username} successfully signed in.", username);
 
         return Redirect(returnUrl);
     }
