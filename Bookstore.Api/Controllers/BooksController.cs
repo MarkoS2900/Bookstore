@@ -1,4 +1,4 @@
-﻿using Bookstore.Api.DTO.Books;
+using Bookstore.Api.DTO.Books;
 using Bookstore.Api.DTO.Common;
 using Bookstore.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -48,22 +48,14 @@ public class BooksController(IBookService bookService, ILogger<BooksController> 
     {
         logger.LogInformation("Creating book.");
 
-        try
-        {
-            var book = await bookService.CreateAsync(request, cancellationToken);
+        var book = await bookService.CreateAsync(request, cancellationToken);
 
-            logger.LogInformation("Successfully created book with ID {BookId}.", book.BookId);
+        logger.LogInformation("Successfully created book with ID {BookId}.", book.BookId);
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = book.BookId },
-                book);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            logger.LogWarning("Failed to create book: {ErrorMessage}", ex.Message);
-            return BadRequest(new { message = ex.Message });
-        }
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = book.BookId },
+            book);
     }
 
     [Authorize(Policy = "BookstoreWrite")]
@@ -71,24 +63,16 @@ public class BooksController(IBookService bookService, ILogger<BooksController> 
     public async Task<ActionResult<BookResponse>> Update(int id, BookRequest request, CancellationToken cancellationToken)
     {
         logger.LogInformation("Updating book with ID {BookId}.", id);
-        try
-        {
-            var book = await bookService.UpdateAsync(id, request, cancellationToken);
+        var book = await bookService.UpdateAsync(id, request, cancellationToken);
 
-            if (book is null)
-            {
-                logger.LogWarning("Book with ID {BookId} was not found.", id);
-                return NotFound();
-            }
-
-            logger.LogInformation("Successfully updated book with ID {BookId}.", id);
-            return Ok(book);
-        }
-        catch (KeyNotFoundException ex)
+        if (book is null)
         {
-            logger.LogWarning("Failed to update book: {ErrorMessage}", ex.Message);
-            return BadRequest(new { message = ex.Message });
+            logger.LogWarning("Book with ID {BookId} was not found.", id);
+            return NotFound();
         }
+
+        logger.LogInformation("Successfully updated book with ID {BookId}.", id);
+        return Ok(book);
     }
 
     [Authorize(Policy = "BookstoreWrite")]
@@ -113,16 +97,8 @@ public class BooksController(IBookService bookService, ILogger<BooksController> 
     public async Task<ActionResult<PagedResponse<BookResponse>>> Search([FromQuery] BookSearchRequest request, CancellationToken cancellationToken)
     {
         logger.LogInformation("Searching for books with provided filters.");
-        try
-        {
-            var result = await bookService.SearchAsync(request, cancellationToken);
-            logger.LogInformation("Successfully found {BookCount} books.", result.Items.Count());
-            return Ok(result);
-        }
-        catch (ArgumentException ex)
-        {
-            logger.LogWarning("Failed to search for books: {ErrorMessage}", ex.Message);
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await bookService.SearchAsync(request, cancellationToken);
+        logger.LogInformation("Successfully found {BookCount} books.", result.Items.Count());
+        return Ok(result);
     }
 }

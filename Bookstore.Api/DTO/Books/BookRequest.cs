@@ -4,7 +4,7 @@ namespace Bookstore.Api.DTO.Books
 {
     public class BookRequest
     {
-        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "AuthorId must be greater than 0.")]
         public int AuthorId { get; set; }
 
         [Required]

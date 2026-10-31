@@ -1,4 +1,4 @@
-﻿using Bookstore.Api.DTO.Authors;
+using Bookstore.Api.DTO.Authors;
 using Bookstore.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -49,19 +49,10 @@ public class AuthorsController(IAuthorService authorService, ILogger<AuthorsCont
     {
         logger.LogInformation("Creating author.");
 
-        try
-        {
-            var author = await authorService.CreateAsync(request, cancellationToken);
+        var author = await authorService.CreateAsync(request, cancellationToken);
 
-            logger.LogInformation("Successfully created author with ID {AuthorId}.", author.AuthorId);
+        logger.LogInformation("Successfully created author with ID {AuthorId}.", author.AuthorId);
 
-            return CreatedAtAction(nameof(GetById), new { id = author.AuthorId }, author);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            logger.LogWarning("Failed to create author: {ErrorMessage}", ex.Message);
-
-            return BadRequest(new { message = ex.Message });
-        }
+        return CreatedAtAction(nameof(GetById), new { id = author.AuthorId }, author);
     }
 }
