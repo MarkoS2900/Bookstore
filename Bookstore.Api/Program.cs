@@ -1,5 +1,6 @@
 using Bookstore.Api;
 using Bookstore.Api.Data;
+using Bookstore.Api.ExceptionHandling;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
