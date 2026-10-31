@@ -14,3 +14,4 @@ obj/
 *.nupkg
 
 .env
+Bookstore.Identity/keys/

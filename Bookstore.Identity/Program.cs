@@ -14,10 +14,22 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddIdentityServer()
+builder.Services.AddIdentityServer(options =>
+{
+    options.IssuerUri =
+        builder.Configuration["IdentityServer:IssuerUri"];
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.Authentication.CookieSameSiteMode = SameSiteMode.Lax;
+        options.Authentication.CheckSessionCookieSameSiteMode = SameSiteMode.Lax;
+    }
+})
     .AddInMemoryApiScopes(IdentityServerConfig.ApiScopes)
     .AddInMemoryApiResources(IdentityServerConfig.ApiResources)
-    .AddInMemoryClients(IdentityServerConfig.Clients)
+    .AddInMemoryClients(
+        IdentityServerConfig.GetClients(
+            builder.Configuration["Swagger:ApiUrl"]!.TrimEnd('/')))
     .AddTestUsers(TestUsers.Users);
 
 var app = builder.Build();
@@ -27,7 +39,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 app.UseRouting();
 

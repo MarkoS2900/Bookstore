@@ -18,7 +18,7 @@ public static class IdentityServerConfig
         }
     ];
 
-    public static IEnumerable<Client> Clients =>
+    public static IEnumerable<Client> GetClients(string apiUrl) =>
     [
         new Client
         {
@@ -46,12 +46,12 @@ public static class IdentityServerConfig
 
             RedirectUris =
             {
-                "https://localhost:7032/swagger/oauth2-redirect.html"
+                $"{apiUrl}/swagger/oauth2-redirect.html"
             },
 
             AllowedCorsOrigins =
             {
-                "https://localhost:7032"
+                apiUrl
             },
 
             AllowedScopes =

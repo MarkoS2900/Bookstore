@@ -8,6 +8,9 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var identityUrl = builder.Configuration["IdentityServer:Authority"]!
+    .TrimEnd('/');
+
 builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 {
     loggerConfiguration
@@ -29,8 +32,8 @@ builder.Services.AddSwaggerGen(options =>
         {
             AuthorizationCode = new OpenApiOAuthFlow
             {
-                AuthorizationUrl = new Uri("https://localhost:7264/connect/authorize"),
-                TokenUrl = new Uri("https://localhost:7264/connect/token"),
+                AuthorizationUrl = new Uri($"{identityUrl}/connect/authorize"),
+                TokenUrl = new Uri($"{identityUrl}/connect/token"),
                 Scopes = new Dictionary<string, string>
                 {
                     { "bookstore.read", "Read books and authors" },
@@ -64,9 +67,17 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://localhost:7264";
+        options.Authority =
+            builder.Configuration["IdentityServer:Authority"];
+
+        options.MetadataAddress =
+            builder.Configuration["IdentityServer:MetadataAddress"];
+
         options.Audience = "bookstore-api";
-        options.RequireHttpsMetadata = true;
+
+        options.RequireHttpsMetadata =
+            builder.Configuration.GetValue(
+                "IdentityServer:RequireHttpsMetadata", true);
     });
 
 builder.Services.AddAuthorization(options =>
@@ -100,6 +111,13 @@ if (app.Environment.IsDevelopment())
         options.OAuthClientId("bookstore-swagger");
         options.OAuthUsePkce();
     });
+
+    await using var scope = app.Services.CreateAsyncScope();
+
+    var db = scope.ServiceProvider
+        .GetRequiredService<BookstoreDbContext>();
+
+    await db.Database.MigrateAsync();
 }
 
 //app.UseHttpsRedirection();

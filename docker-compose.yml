@@ -29,5 +29,43 @@ services:
       retries: 10
       start_period: 30s
 
+  bookstore-identity:
+    build:
+      context: .
+      dockerfile: Bookstore.Identity/Dockerfile
+    container_name: bookstore-identity
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 8080
+      IdentityServer__IssuerUri: "http://localhost:8081"
+      Swagger__ApiUrl: "http://localhost:8080"
+    ports:
+      - "8081:8080"
+    volumes:
+      - bookstore_identity_keys:/app/keys
+      - bookstore_identity_data_protection:/root/.aspnet/DataProtection-Keys
+
+  bookstore-api:
+    build:
+      context: .
+      dockerfile: Bookstore.Api/Dockerfile
+    container_name: bookstore-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 8080
+      ConnectionStrings__Bookstore: "Server=sqlserver,1433;Database=BookstoreDb;User Id=sa;Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;Connect Timeout=30;"
+      IdentityServer__Authority: "http://localhost:8081"
+      IdentityServer__MetadataAddress: "http://bookstore-identity:8080/.well-known/openid-configuration"
+      IdentityServer__RequireHttpsMetadata: "false"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      bookstore-identity:
+        condition: service_started
+    ports:
+      - "8080:8080"
+
 volumes:
   bookstore_sql_data:
+  bookstore_identity_keys:
+  bookstore_identity_data_protection:
