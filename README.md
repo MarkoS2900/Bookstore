@@ -41,7 +41,7 @@ The solution file is `Bookstore.Api/Bookstore.Api.slnx`. Run commands from the r
 Create a `.env` file alongside `docker-compose.yml`:
 
 ```dotenv
-DB_PASSWORD=Your_Strong_Development_Password!
+DB_PASSWORD=Your_Password
 ```
 
 Use a password that satisfies SQL Server complexity requirements. The `.env` file is excluded from Git and the Docker build context.
