@@ -13,7 +13,7 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
     {
         var (status, title, detail) = exception switch
         {
-            AuthorNotFoundException => (StatusCodes.Status400BadRequest, "Invalid author", exception.Message),
+            AuthorNotFoundException => (StatusCodes.Status404NotFound, "Author not found", exception.Message),
             ValidationException => (StatusCodes.Status400BadRequest, "Validation failed", exception.Message),
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Concurrent modification",
                 "The record changed or was deleted while this request was being processed. Reload it and try again."),
