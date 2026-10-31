@@ -4,6 +4,7 @@ using Bookstore.Api.DTO.Common;
 using Bookstore.Api.Models;
 using Bookstore.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Bookstore.Api.Repositories
 {
@@ -74,9 +75,17 @@ namespace Bookstore.Api.Repositories
 
             var totalCount = await query.CountAsync(cancellationToken);
 
+            var offset = (long)(request.Page - 1) * request.PageSize;
+
+            if (offset > int.MaxValue)
+            {
+                throw new ValidationException("The requested page exceeds the supported range.");
+            }
+
             var books = await query
                 .OrderBy(b => b.Title)
-                .Skip((request.Page - 1) * request.PageSize)
+                .ThenBy(b => b.BookId)
+                .Skip((int)offset)
                 .Take(request.PageSize)
                 .ToListAsync(cancellationToken);
 

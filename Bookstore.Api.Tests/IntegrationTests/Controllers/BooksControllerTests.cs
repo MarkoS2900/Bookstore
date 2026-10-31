@@ -403,4 +403,16 @@ public sealed class BooksControllerTests
 
         return book.BookId;
     }
+
+    [Fact]
+    public async Task Search_ReturnsBadRequest_WhenPaginationOffsetOverflows()
+    {
+        await using var factory = new BookstoreApiFactory();
+        using var client = factory.CreateAuthenticatedClient();
+
+        var response = await client.GetAsync(
+            "/api/v1/books/search?page=214748366&pageSize=10");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
